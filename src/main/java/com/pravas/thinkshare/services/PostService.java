@@ -11,22 +11,22 @@ public interface PostService {
 	PostDto craetePost(PostDto postDto, Integer userId, Integer categoryId);
 	
 	//update
-	Post updatePost(PostDto postDto, Integer postId);
+	PostDto updatePost(PostDto postDto, Integer postId);
 	
 	//delete
 	void deletePost(Integer postId);
 	
 	//get all posts
-	List<Post> getAllPost();
+	List<PostDto> getAllPost();
 	
 	//get single post
-	Post getPostById(Integer postId);
+	PostDto getPostById(Integer postId);
 	
 	//get all post by categories
-	List<Post> getPostByCategory(Integer categoryId);
+	List<PostDto> getPostByCategory(Integer categoryId);
 	
 	//get all posts by user
-	List<Post> getPostsByUser(Integer userId);
+	List<PostDto> getPostsByUser(Integer userId);
 	
 	//search posts
 	List<Post> searchPosts(String keyword);
