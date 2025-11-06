@@ -6,6 +6,10 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.pravas.thinkshare.entities.Category;
@@ -13,6 +17,7 @@ import com.pravas.thinkshare.entities.Post;
 import com.pravas.thinkshare.entities.User;
 import com.pravas.thinkshare.exceptions.ResourceNotFoundException;
 import com.pravas.thinkshare.payloads.PostDto;
+import com.pravas.thinkshare.payloads.PostResponse;
 import com.pravas.thinkshare.repositories.CategoryRepo;
 import com.pravas.thinkshare.repositories.PostRepo;
 import com.pravas.thinkshare.repositories.UserRepo;
@@ -75,10 +80,34 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public List<PostDto> getAllPost() {
-		List<Post> allPosts=this.postRepo.findAll();
-		List<PostDto> postDtos=allPosts.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
-		return postDtos;
+	public PostResponse getAllPost(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
+		
+		Sort sort=null;
+		
+		if(sortDir.equalsIgnoreCase("asc")) {
+			sort=Sort.by(sortBy).ascending();
+		}else {
+			sort=Sort.by(sortBy).descending();
+		}
+		
+		Pageable pageRequest = PageRequest.of(pageNumber, pageSize, sort);
+		
+		Page<Post> all = this.postRepo.findAll(pageRequest);
+		
+		List<Post> list = all.getContent();
+		
+		List<PostDto> postDtos=list.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
+		
+		PostResponse postRes=new PostResponse();
+		
+		postRes.setContent(postDtos);
+		postRes.setPageNumber(all.getNumber());
+		postRes.setPageSize(all.getSize());
+		postRes.setTotalElements(all.getTotalElements());
+		postRes.setTotalPages(all.getTotalPages());
+		postRes.setLastPages(all.isLast());
+		
+		return postRes;
 	}
 
 	@Override
@@ -110,9 +139,13 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public List<Post> searchPosts(String keyword) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<PostDto> searchPosts(String keyword) {
+		
+		List<Post> titleContaining = this.postRepo.findByTitleContaining(keyword);
+		
+		List<PostDto> collect = titleContaining.stream().map((post)->this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
+		
+		return collect;
 	}
 
 }
